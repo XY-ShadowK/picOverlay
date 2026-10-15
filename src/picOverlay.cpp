@@ -104,7 +104,7 @@ int resolve() {
         }
         switch(it->second) {
             case 0 :
-                ss >> t0 >> quoted(tempStr);
+                ss >> t0 >> quoted(tempStr, '"', '\0');
                 if(!setLayer(tempStr, t0)) return -1;
                 break;
             case 1 :
@@ -112,7 +112,7 @@ int resolve() {
                 clearLayer(t0);
                 break;
             case 2 :
-                ss >> quoted(tempStr);
+                ss >> quoted(tempStr, '"', '\0');
                 generatePicAndSave(tempStr);
                 break;
         }
