@@ -50,48 +50,56 @@ cmake .. \
 
 ### 接下来的行：
 
-**命令 1: `set 图层编号 文件名`**
-
+**命令 1：**`set 图层编号 文件名`
 设置文件到编号图层
 
-**命令 2: `clear 图层编号`**
+**命令 2：`show 图层编号 不透明度`
+**设置编号对应图层不透明度
 
-清除编号对应图层
+**命令 3：**`hide 图层编号`
+隐藏编号对应图层（等价于show 编号 0）
 
-**命令 3: `generate 文件名`**
+**命令 4：`clear 图层编号`
+**清除编号对应图层
 
+**命令 5：**`generate`
 生成目标文件
+
+默认`不透明度`范围：0 ~ 255
 
 ### 简单样例
 
 ```
 1920 1080 "D:/输入 图片" "D/输出 图片"
 set 1 a.png
+show 1 255
 set 2 b.png
+show 2 255
 set 3 c.png
-generate 01.png
+generate
 set 2 d.png
-generate 02.png
+generate
 clear 2
-generate 03.png
+show 3 255
+generate
 ```
 
 **输出：**
 
 ```
-generate: 01.png
-Layer 1 a.png
-Layer 2 b.png
-Layer 3 c.png
+generate 1:
+Layer 1 a.png Opacity : 255
+Layer 2 b.png Opacity : 255
+Layer 3 c.png Opacity : 0
 
-generate: 02.png
-Layer 1 a.png
-Layer 2 d.png
-Layer 3 c.png
+generate 2:
+Layer 1 a.png Opacity : 255
+Layer 2 d.png Opacity : 255
+Layer 3 c.png Opacity : 0
 
-generate: 03.png
-Layer 1 a.png
-Layer 3 c.png
+generate 3:
+Layer 1 a.png Opacity : 255
+Layer 3 c.png Opacity : 255
 ```
 
 成功生成了01~03.png

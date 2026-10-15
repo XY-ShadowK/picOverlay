@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <type_traits>
 
 #include "include/pictures.hpp"
 #include "include/pngs.hpp"
@@ -14,6 +15,7 @@ using std::cin;
 using std::cerr;
 using std::endl;
 using std::string;
+using std::to_string;
 using std::stringstream;
 using std::unordered_map;
 using std::map;
@@ -43,7 +45,18 @@ string inPath, outPath;
 unordered_map<string, PicData*> picDataStorage;
 map<uint32_t, string> picLayers;
 unordered_map<uint32_t, uint64_t> layerShow;
+string lastPicArgs = "";
+uint32_t numGeneratePics = 0;
 ifstream fin;
+stringstream sStream;
+
+template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+string num2leading0str(T num) {
+    sStream.str("");
+    sStream.clear();
+    sStream << std::setw(2) << std::setfill('0') << num;
+    return sStream.str();
+}
 
 void printHelp() {
     printf("picOverlay -file=[filename]\n\n");
@@ -90,39 +103,45 @@ void clearLayer(const uint32_t& layer) {
     picLayers.erase(layer);
     // 不用清除图层显示情况
 }
-bool generatePicAndSave(const string& filename) {
+bool generatePicAndSave() {
     if(picLayers.empty()) return false;
     map<uint32_t, string>::iterator itLayer = picLayers.begin();
-    unordered_map<string, PicData*>::iterator itPic = picDataStorage.find(itLayer->second);
-    printf("\ngenerate: %s\n", filename.c_str());
-    PicData picData;
     unordered_map<uint32_t, uint64_t>::iterator itShow;
-    for(;!picData.getStorageInit();itLayer ++) {
+    printf("\ngenerate %u:\n", ++ numGeneratePics);
+    string nowPicArgs = "generate " + num2leading0str(numGeneratePics) + " : ";
+    for(;itLayer != picLayers.end();itLayer ++) {
+        itShow = layerShow.find(itLayer->first);
+        if(itShow->second)
+            nowPicArgs += to_string(itLayer->first) + '*' + itLayer->second + '*' + to_string(itShow->second) + " ? ";
+    }
+    if(nowPicArgs == lastPicArgs) {
+        printf("same as the previous one.\n");
+        numGeneratePics --;
+        return false;
+    }
+    unordered_map<string, PicData*>::iterator itPic;
+    PicData picData;
+    for(itLayer = picLayers.begin();itLayer != picLayers.end();itLayer ++) {
         itShow = layerShow.find(itLayer->first);
         if(itShow->second) {
             itPic = picDataStorage.find(itLayer->second);
             if(itPic == picDataStorage.end()) return false;
             printf("Layer %u : %s Opacity : %llu\n", itLayer->first, itLayer->second.c_str(), itShow->second);
-            picData.copyData(*itPic->second, itShow->second);
-            itLayer ++;
-            break;
-        }
-        printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
-    }
-    for(;itLayer != picLayers.end();itLayer ++) {
-        itShow = layerShow.find(itLayer->first);
-        if(itShow->second) {
-            itPic = picDataStorage.find(itLayer->second);
-            if(itPic == picDataStorage.end()) return false;
-            if(itShow->second) {
-                printf("Layer %u : %s Opacity : %llu\n", itLayer->first, itLayer->second.c_str(), itShow->second);
+            if(picData.getStorageInit())
                 picData.overlay(*itPic->second, itShow->second);
-            }
+            else
+                picData.copyData(*itPic->second, itShow->second);
         }
         else
             printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
     }
-    return writePng(outPath + '\\' + filename, &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
+    if(picData.getStorageInit()) {
+        bool res = writePng(outPath + '\\' + num2leading0str(numGeneratePics) + ".png", &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
+        if(res) lastPicArgs = nowPicArgs;
+        else printf("failed!\n");
+        return res;
+    }
+    return false;
 }
 
 int resolve() {
@@ -161,8 +180,8 @@ int resolve() {
                 clearLayer(t0);
                 break;
             case 4 :
-                ss >> quoted(tempStr, '"', '\0');
-                generatePicAndSave(tempStr);
+                // ss >> quoted(tempStr, '"', '\0');
+                generatePicAndSave();
                 break;
         }
     }

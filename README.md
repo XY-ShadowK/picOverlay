@@ -52,38 +52,47 @@ bufferWidth bufferHeight inputPath outputPath
 
 **Command 1: `set layer filename`**
 
-**Command 2: `clear layer`**
+**Command 2: `show layer opacity`**
 
-**Command 3: `generate filename`**
+**Command 3: `hide layer`**
+
+**Command 4: `clear layer`**
+
+**Command 5: `generate`**
+
+Default `opacity`range: 0 ~ 255
 
 ### Simple Example
 
 ```
 1920 1080 "D:/input pictures" "D/output pictures"
 set 1 a.png
+show 1 255
 set 2 b.png
+show 2 255
 set 3 c.png
-generate 01.png
+generate
 set 2 d.png
-generate 02.png
+generate
 clear 2
-generate 03.png
+show 3 255
+generate
 ```
 
 **Output:**
 
 ```
-generate: 01.png
-Layer 1 a.png
-Layer 2 b.png
-Layer 3 c.png
+generate 1:
+Layer 1 a.png Opacity : 255
+Layer 2 b.png Opacity : 255
+Layer 3 c.png Opacity : 0
 
-generate: 02.png
-Layer 1 a.png
-Layer 2 d.png
-Layer 3 c.png
+generate 2:
+Layer 1 a.png Opacity : 255
+Layer 2 d.png Opacity : 255
+Layer 3 c.png Opacity : 0
 
-generate: 03.png
-Layer 1 a.png
-Layer 3 c.png
+generate 3:
+Layer 1 a.png Opacity : 255
+Layer 3 c.png Opacity : 255
 ```
