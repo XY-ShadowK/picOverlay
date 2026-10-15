@@ -108,7 +108,7 @@ bool generatePicAndSave() {
     map<uint32_t, string>::iterator itLayer = picLayers.begin();
     unordered_map<uint32_t, uint64_t>::iterator itShow;
     printf("\ngenerate %u:\n", ++ numGeneratePics);
-    string nowPicArgs = "generate " + num2leading0str(numGeneratePics) + " : ";
+    string nowPicArgs = "";
     for(;itLayer != picLayers.end();itLayer ++) {
         itShow = layerShow.find(itLayer->first);
         if(itShow->second)
@@ -137,7 +137,8 @@ bool generatePicAndSave() {
     }
     if(picData.getStorageInit()) {
         bool res = writePng(outPath + '\\' + num2leading0str(numGeneratePics) + ".png", &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
-        if(res) lastPicArgs = nowPicArgs;
+        if(res) 
+            lastPicArgs = nowPicArgs;
         else printf("failed!\n");
         return res;
     }
