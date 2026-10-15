@@ -85,8 +85,8 @@ bool setLayer(const string& filename, const uint32_t& layer) {
     return true;
 }
 bool showLayer(const uint32_t& layer, const uint8_t& alpha) {
-    if(layerShow.find(layer) == layerShow.end())
-        return false;
+    // if(layerShow.find(layer) == layerShow.end())
+    //     return false;
     if constexpr (MAX_PIXEL_DATA == MAX_INPUT_PIXEL_DATA)
         layerShow[layer] = alpha;
     else
@@ -142,6 +142,7 @@ bool generatePicAndSave() {
         else printf("failed!\n");
         return res;
     }
+    numGeneratePics --;
     return false;
 }
 
