@@ -21,6 +21,8 @@ using std::ifstream;
 using std::getline;
 using std::quoted;
 
+const uint64_t MAX_PIXEL_DATA = 255;
+const uint64_t MAX_INPUT_PIXEL_DATA = 255;
 const unordered_map<string, uint32_t> options{
     {"-force_alpha", 0},
     {"-adam7", 1}
@@ -29,15 +31,18 @@ const png_byte colorTypes[2][2] = {
     {PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_RGB_ALPHA},
     {PNG_COLOR_TYPE_GRAY, PNG_COLOR_TYPE_GRAY_ALPHA}
 };
+const unordered_map<string, uint32_t> cmdCode{
+    {"set", 0},
+    {"show", 1},
+    {"hide", 2},
+    {"clear", 3},
+    {"generate", 4}
+};
 std::bitset<8> settings;
 string inPath, outPath;
 unordered_map<string, PicData*> picDataStorage;
-const unordered_map<string, uint32_t> cmdCode{
-    {"set", 0},
-    {"clear", 1},
-    {"generate", 2}
-};
 map<uint32_t, string> picLayers;
+unordered_map<uint32_t, uint64_t> layerShow;
 ifstream fin;
 
 void printHelp() {
@@ -62,26 +67,62 @@ bool setLayer(const string& filename, const uint32_t& layer) {
             exit(-1);
     }
     setLayer(layer, filename);
+    // 已存在不透明度时，不改变原值
+    layerShow.emplace(layer, 0);
+    return true;
+}
+bool showLayer(const uint32_t& layer, const uint8_t& alpha) {
+    if(layerShow.find(layer) == layerShow.end())
+        return false;
+    if constexpr (MAX_PIXEL_DATA == MAX_INPUT_PIXEL_DATA)
+        layerShow[layer] = alpha;
+    else
+        layerShow[layer] = alpha * MAX_PIXEL_DATA / MAX_INPUT_PIXEL_DATA;
+    return true;
+}
+bool hideLayer(const uint32_t& layer) {
+    if(layerShow.find(layer) == layerShow.end())
+        return false;
+    layerShow[layer] = 0;
     return true;
 }
 void clearLayer(const uint32_t& layer) {
     picLayers.erase(layer);
+    // 不用清除图层显示情况
 }
 bool generatePicAndSave(const string& filename) {
     if(picLayers.empty()) return false;
     map<uint32_t, string>::iterator itLayer = picLayers.begin();
     unordered_map<string, PicData*>::iterator itPic = picDataStorage.find(itLayer->second);
-    if(itPic == picDataStorage.end()) return false;
-    printf("\ngenerate: %s\nLayer %d : %s\n", filename.c_str(), itLayer->first, itLayer->second.c_str());
-    PicData picData(*itPic->second);
-    itLayer ++;
-    for(;itLayer != picLayers.end();itLayer ++) {
-        itPic = picDataStorage.find(itLayer->second);
-        if(itPic == picDataStorage.end()) return false;
-        printf("Layer %d : %s\n", itLayer->first, itLayer->second.c_str());
-        picData.overlay(*itPic->second);
+    printf("\ngenerate: %s\n", filename.c_str());
+    PicData picData;
+    unordered_map<uint32_t, uint64_t>::iterator itShow;
+    for(;!picData.getStorageInit();itLayer ++) {
+        itShow = layerShow.find(itLayer->first);
+        if(itShow->second) {
+            itPic = picDataStorage.find(itLayer->second);
+            if(itPic == picDataStorage.end()) return false;
+            printf("Layer %u : %s Opacity : %llu\n", itLayer->first, itLayer->second.c_str(), itShow->second);
+            picData.copyData(*itPic->second, itShow->second);
+            itLayer ++;
+            break;
+        }
+        printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
     }
-    return writePng(outPath + '\\' + filename, &picData, colorTypes[picData.isGray][picData.hasAlpha]);
+    for(;itLayer != picLayers.end();itLayer ++) {
+        itShow = layerShow.find(itLayer->first);
+        if(itShow->second) {
+            itPic = picDataStorage.find(itLayer->second);
+            if(itPic == picDataStorage.end()) return false;
+            if(itShow->second) {
+                printf("Layer %u : %s Opacity : %llu\n", itLayer->first, itLayer->second.c_str(), itShow->second);
+                picData.overlay(*itPic->second, itShow->second);
+            }
+        }
+        else
+            printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
+    }
+    return writePng(outPath + '\\' + filename, &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
 }
 
 int resolve() {
@@ -108,10 +149,18 @@ int resolve() {
                 if(!setLayer(tempStr, t0)) return -1;
                 break;
             case 1 :
+                ss >> t0 >> t1;
+                if(!showLayer(t0, t1)) return -1;
+                break;
+            case 2 :
+                ss >> t0;
+                if(!hideLayer(t0)) return -1;
+                break;
+            case 3 :
                 ss >> t0;
                 clearLayer(t0);
                 break;
-            case 2 :
+            case 4 :
                 ss >> quoted(tempStr, '"', '\0');
                 generatePicAndSave(tempStr);
                 break;

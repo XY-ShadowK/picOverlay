@@ -27,7 +27,7 @@ bool getPng(const string& filename, PngInfo*& pPngInfo)
         return false;
     }
     pPngInfo = new PngInfo(png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
-    if(!pPngInfo->pStruct || !pPngInfo->pInfo) {
+    if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
         cerr<<"png结构体初始化错误！"<<endl;
         return false;
     }
@@ -39,7 +39,7 @@ bool setPng(const string& filename, PngInfo*& pPngInfo) {
         return false;
     }
     pPngInfo = new PngInfo(png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
-    if(!pPngInfo->pStruct || !pPngInfo->pInfo) {
+    if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
         cerr<<"png结构体初始化错误！"<<endl;
         return false;
     }
@@ -48,7 +48,7 @@ bool setPng(const string& filename, PngInfo*& pPngInfo) {
 
 PicData* readPng(const string& filename) {
     PngInfo* pPngInfo = nullptr;
-    if(!getPng(filename, pPngInfo) || setjmp(png_jmpbuf(pPngInfo->pStruct))) {
+    if(!getPng(filename, pPngInfo) || setjmp(png_jmpbuf(pPngInfo->getPStruct()))) {
         if(fpRead) {
             fclose(fpRead);
             fpRead = nullptr;
@@ -68,7 +68,7 @@ PicData* readPng(const string& filename) {
 }
 bool writePng(const string& filename, PicData* pPicData, png_byte colorType) {
     PngInfo* pPngInfo = nullptr;
-    if(!setPng(filename, pPngInfo) || setjmp(png_jmpbuf(pPngInfo->pStruct))) {
+    if(!setPng(filename, pPngInfo) || setjmp(png_jmpbuf(pPngInfo->getPStruct()))) {
         if(fpWrite) {
             fclose(fpWrite);
             fpWrite = nullptr;
@@ -78,7 +78,7 @@ bool writePng(const string& filename, PicData* pPicData, png_byte colorType) {
         return false;
     }
     pPngInfo->initIO(fpWrite);
-    pPngInfo->setInfo(pPicData->pPicInfo, colorType);
+    pPngInfo->setInfo(pPicData->getPicInfoPtr(), colorType);
     pPngInfo->writeData(pPicData);
     if(fpWrite) {
         fclose(fpWrite);
