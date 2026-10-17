@@ -40,6 +40,18 @@ cmake .. \
 3. 运行 `picOverlay.exe /?(或者 /help)` 来得到运行命令格式
    简单运行距举例： `picOverlay.exe -file=actions.txt`
 
+## 额外选项：
+
+### 速查列表：
+
+* `-custom_name`: 开启生成文件名自定义模式。
+
+### 详情：
+
+#### -custom_name
+
+当这个选项被启用时，你必须使用 `generate 文件名` 来显式指定生成的文件名。
+
 ## 如何编写执行脚本
 
 ### 第一行：

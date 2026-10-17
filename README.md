@@ -40,6 +40,18 @@ cmake .. \
 3. run picOverlay.exe /?(or /help) to get run command format
    simple running eg: `picOverlay.exe -file=actions.txt`
 
+## Extra options:
+
+### List:
+
+* `-custom_name`: Turn on filename custom mode.
+
+### Detail:
+
+#### -custom_name
+
+When this option is enabled, you must use `generate filename` to explictly specify generated filename.
+
 ## How to write action script?
 
 ### First Line:

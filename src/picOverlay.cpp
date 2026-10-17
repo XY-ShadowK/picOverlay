@@ -26,8 +26,9 @@ using std::quoted;
 const uint64_t MAX_PIXEL_DATA = 255;
 const uint64_t MAX_INPUT_PIXEL_DATA = 255;
 const unordered_map<string, uint32_t> options{
-    {"-force_alpha", 0},
-    {"-adam7", 1}
+    {"-custom_name", 0},
+    {"-force_alpha", 1},
+    {"-adam7", 2}
 };
 const png_byte colorTypes[2][2] = {
     {PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_RGB_ALPHA},
@@ -60,6 +61,7 @@ string num2leading0str(T num) {
 
 void printHelp() {
     printf("picOverlay -file=[filename]\n\n");
+    printf("-custom_name 启用生成文件名自定义\n");
     // printf("-force_alpha 强制启用alpha通道\n");
     // printf("-adam7 启用隔行扫描（只对写入生效）\n");
 }
@@ -103,7 +105,7 @@ void clearLayer(const uint32_t& layer) {
     picLayers.erase(layer);
     // 不用清除图层显示情况
 }
-bool generatePicAndSave() {
+bool generatePicAndSave(const string& filename = num2leading0str(numGeneratePics) + ".png") {
     if(picLayers.empty()) return false;
     map<uint32_t, string>::iterator itLayer = picLayers.begin();
     unordered_map<uint32_t, uint64_t>::iterator itShow;
@@ -136,7 +138,7 @@ bool generatePicAndSave() {
             printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
     }
     if(picData.getStorageInit()) {
-        bool res = writePng(outPath + '\\' + num2leading0str(numGeneratePics) + ".png", &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
+        bool res = writePng(outPath + '\\' + filename, &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
         if(res) 
             lastPicArgs = nowPicArgs;
         else printf("failed!\n");
@@ -182,8 +184,11 @@ int resolve() {
                 clearLayer(t0);
                 break;
             case 4 :
-                // ss >> quoted(tempStr, '"', '\0');
-                generatePicAndSave();
+                if(settings[0]) {
+                    ss >> quoted(tempStr, '"', '\0');
+                    generatePicAndSave(tempStr);
+                }
+                else generatePicAndSave();
                 break;
         }
     }
