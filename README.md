@@ -1,22 +1,25 @@
-# How to build?
+# picOverlay
+
+English | [简体中文](README-zh_CN.md)
+
+## How to build?
 
 Run command in the root dir:
 
 ```Shell
 mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake -B build
+cmake --build ./build
 ```
 
-For MSVC, change `cmake --build .` to `cmake --build . --config release`.
+For MSVC, change `cmake --build ./build` to `cmake --build ./build --config release`.
 
-If your system does not have libpng or(and) zlib installed, change `cmake ..` to below.
+If your system does not have libpng or(and) zlib installed, change `cmake -B build` to below.
 
 **POWERSHELL**
 
 ```PowerShell
-cmake .. `
+cmake -B build `
     -DPNG_INCLUDE_DIR="{your libpng include dir}" `
     -DPNG_LIBRARY="{your libpng lib dir}" `
     -DZLIB_INCLUDE_DIR="{your zlib include dir}" `
@@ -33,34 +36,28 @@ cmake .. \
     -DZLIB_LIBRARY="{your zlib lib dir}"
 ```
 
-# How to use?
+## How to use?
 
 1. Open shell/cmd/...
-2. change dir to exe in
-3. run picOverlay.exe /?(or /help) to get run command format
+2. change dir to executable file in
+3. run `picOverlay.exe -h(or --help)` to get run command format
    simple running eg: `picOverlay.exe -file=actions.txt`
 
-## Extra options:
+### Extra options:
 
-### List:
+#### List:
 
-* `-custom_name`: Turn on filename custom mode.
+* [`-i, --input`](OPTIONS-zh_CN.md##-i,---input) : Set action process filename
+* [`--source`](OPTIONS-zh_CN.md##--source) : Set read directory
+* [`--destination`](OPTIONS-zh_CN.md##--destination) : Set output directory
+* [`--buffer-x`](OPTIONS-zh_CN.md##--buffer-x) : Set buffer width
+* [`--buffer-y`](OPTIONS-zh_CN.md##--buffer-y) : Set buffer height
+* [`--custom-name`](OPTIONS.md##--custom-name) : Turn on filename custom mode
+* [`-h, --help`](OPTIONS-zh_CN.md##-h,---help) : Print help information
 
-### Detail:
+### How to write action script?
 
-#### -custom_name
-
-When this option is enabled, you must use `generate filename` to explictly specify generated filename.
-
-## How to write action script?
-
-### First Line:
-
-```
-bufferWidth bufferHeight inputPath outputPath
-```
-
-### Lines between:
+#### One command per line:
 
 **Command 1: `set layer filename`**
 
@@ -74,10 +71,9 @@ bufferWidth bufferHeight inputPath outputPath
 
 Default `opacity`range: 0 ~ 255
 
-### Simple Example
+#### Simple Example
 
 ```
-1920 1080 "D:/input pictures" "D/output pictures"
 set 1 a.png
 show 1 255
 set 2 b.png

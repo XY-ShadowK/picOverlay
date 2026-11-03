@@ -355,7 +355,7 @@ public:
 };
 using PngInfo = self_png_info;
 
-inline void init_pic_buffer(uint32_t width, uint32_t height) {
+inline void init_pic_buffer(size_t width, size_t height) {
     bufRead.resize(width, height);
     bufWrite.resize(width, height);
 }

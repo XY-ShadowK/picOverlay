@@ -8,6 +8,9 @@
 #include <iomanip>
 #include <type_traits>
 
+#include "windowsRub.hpp"
+#include "cxxopts.hpp"
+
 #include "include/pictures.hpp"
 #include "include/pngs.hpp"
 
@@ -25,11 +28,11 @@ using std::quoted;
 
 const uint64_t MAX_PIXEL_DATA = 255;
 const uint64_t MAX_INPUT_PIXEL_DATA = 255;
-const unordered_map<string, uint32_t> options{
-    {"-custom_name", 0},
-    {"-force_alpha", 1},
-    {"-adam7", 2}
-};
+// const unordered_map<string, uint32_t> options{
+//     {"-custom_name", 0},
+//     {"-force_alpha", 1},
+//     {"-adam7", 2}
+// };
 const png_byte colorTypes[2][2] = {
     {PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_RGB_ALPHA},
     {PNG_COLOR_TYPE_GRAY, PNG_COLOR_TYPE_GRAY_ALPHA}
@@ -41,7 +44,9 @@ const unordered_map<string, uint32_t> cmdCode{
     {"clear", 3},
     {"generate", 4}
 };
-std::bitset<8> settings;
+
+cxxopts::Options options("picOverlay", "图片叠加");
+cxxopts::ParseResult settings;
 string inPath, outPath;
 unordered_map<string, PicData*> picDataStorage;
 map<uint32_t, string> picLayers;
@@ -59,11 +64,37 @@ string num2leading0str(T num) {
     return sStream.str();
 }
 
-void printHelp() {
-    printf("picOverlay -file=[filename]\n\n");
-    printf("-custom_name 启用生成文件名自定义\n");
-    // printf("-force_alpha 强制启用alpha通道\n");
-    // printf("-adam7 启用隔行扫描（只对写入生效）\n");
+void parseArgs(int argc, char* argv[]) {
+    try {
+        options
+        .set_width(140)
+        .add_options()
+            ("i,input", "流程文件", cxxopts::value<string>()->default_value("./actions"), "ACTION_PROCESS_FILE")
+            ("source", "图片读取源目录", cxxopts::value<string>()->default_value("."), "SOURCE_DIR")
+            ("destination", "图片输出目标目录", cxxopts::value<string>()->default_value("."), "DESTINATION_DIR")
+            ("buffer-x", "缓冲区宽度", cxxopts::value<size_t>()->default_value("3840"), "BUFFER_WIDTH")
+            ("buffer-y", "缓冲区高度", cxxopts::value<size_t>()->default_value("3840"), "BUFFER_HEIGHT")
+            ("custom-name", "启用生成文件名自定义")
+            ("h,help", "打印帮助信息")
+            // ("force-alpha", "强制启用alpha通道")
+            // ("adam7", "启用隔行扫描（只对写入生效）")
+            ;
+        settings = options.parse(argc, argv);
+        if(settings.count("help")) {
+            printf(options.help().c_str());
+            exit(0);
+        }
+        inPath = settings["source"].as<string>();
+        outPath = settings["destination"].as<string>();
+        if(settings.unmatched().size()) {
+            cerr<<settings.unmatched()[0]<<endl;
+            exit(-1);
+        }
+    } catch (const cxxopts::exceptions::exception& e)
+    {
+        cerr<<"error parsing options: "<<e.what()<<endl;
+        exit(-1);
+    }
 }
 
 void setLayer(const uint32_t& layer, const string& picName) {
@@ -75,7 +106,7 @@ void setLayer(const uint32_t& layer, const string& picName) {
 bool setLayer(const string& filename, const uint32_t& layer) {
     unordered_map<string, PicData*>::const_iterator it;
     if((it = picDataStorage.find(filename)) == picDataStorage.end()) {
-        PicData* pPicData = readPng(inPath + '\\' + filename);
+        PicData* pPicData = readPng(inPath + '/' + filename);
         if(pPicData)
             picDataStorage.emplace(filename, pPicData);
         else
@@ -138,7 +169,7 @@ bool generatePicAndSave(const string& filename = num2leading0str(numGeneratePics
             printf("Layer %u : %s Opacity : 0\n", itLayer->first, itLayer->second.c_str());
     }
     if(picData.getStorageInit()) {
-        bool res = writePng(outPath + '\\' + filename, &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
+        bool res = writePng(outPath + '/' + filename, &picData, colorTypes[picData.getGray()][picData.getAlpha()]);
         if(res) 
             lastPicArgs = nowPicArgs;
         else printf("failed!\n");
@@ -154,10 +185,7 @@ int resolve() {
     stringstream ss;
     uint32_t t0, t1;
     unordered_map<string, uint32_t>::const_iterator it;
-    getline(fin, line);
-    ss.str(line);
-    ss >> t0 >> t1 >> quoted(inPath, '"', '\0') >> quoted(outPath, '"', '\0');
-    init_pic_buffer(t0 * 8, t1 * 8);
+    init_pic_buffer(settings["buffer-x"].as<size_t>() * 8, settings["buffer-y"].as<size_t>() * 8);
     while(getline(fin, line)) {
         ss.str(line);
         ss.clear();
@@ -184,7 +212,7 @@ int resolve() {
                 clearLayer(t0);
                 break;
             case 4 :
-                if(settings[0]) {
+                if(settings["custom_name"].as<bool>()) {
                     ss >> quoted(tempStr, '"', '\0');
                     generatePicAndSave(tempStr);
                 }
@@ -195,24 +223,8 @@ int resolve() {
     return 0;
 }
 
-int main(int argc, char* argv[])
-{
-    if(argc <= 0) printHelp();
-    if(!strcmp(argv[1], "/?") || !strcmp(argv[1], "/help")) {
-        printHelp();
-        return 0;
-    }
-    unordered_map<string, uint32_t>::const_iterator it;
-    for(int i = 1;i < argc;i ++) {
-        if((it = options.find(argv[i])) == options.end()) {
-            if(strncmp(argv[i], "-file=", 6)) {
-                cerr<<"参数错误！"<<endl;
-                return -1;
-            }
-            fin.open(argv[i] + 6, std::ios::in);
-            continue;
-        }
-        settings.set(it->second);
-    }
+UNIVERSE_MAIN
+    parseArgs(argc, argv);
+    fin.open(settings["input"].as<string>(), std::ios::in);
     return resolve();
-}
+UNIVERSE_MAINEND

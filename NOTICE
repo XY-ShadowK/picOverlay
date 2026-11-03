@@ -1,0 +1,34 @@
+Third-Party Notices
+
+This product contains third-party components licensed under open-source licenses.
+Detailed license texts are located in the "licenses/" directory.
+
+===============================================================================
+
+1. windowsRub
+   Version: none (commit 0a07f60f20035e6bf6974784988b5ef02a3f57ed)
+   Source: https://github.com/XY-ShadowK/windowsRub
+   License: Mozilla Public License 2.0
+   License file: licenses/windowsRub.txt
+
+2. cxxopts
+   Version: none (commit ad6e41343d4ed239c6579a8e87c0a66b709d04be)
+   Source: https://git.savannah.gnu.org/git/libiconv.git
+   License: LGPL-2.1-or-later
+   License file: licenses/cxxopts.txt
+
+3. zlib
+   Version: 1.2.13
+   Source: https://github.com/madler/zlib
+   License: zlib/libpng License
+   License file: licenses/zlib.txt
+
+4. libpng
+   Version: 1.6.59
+   Source: https://sourceforge.net/projects/libpng/
+   License: zlib/libpng License
+   License file: licenses/libpng.txt
+
+===============================================================================
+
+For more information about these licenses, please refer to the files in the "licenses/" directory.
