@@ -87,7 +87,7 @@ void parseArgs(int argc, char* argv[]) {
         inPath = settings["source"].as<string>();
         outPath = settings["destination"].as<string>();
         if(settings.unmatched().size()) {
-            cerr<<settings.unmatched()[0]<<endl;
+            cerr<<settings.unmatched()[0]<<" can not recognize."<<endl;
             exit(-1);
         }
     } catch (const cxxopts::exceptions::exception& e)
