@@ -2,6 +2,8 @@
 
 English | [简体中文](README-zh_CN.md)
 
+Batch generate images with multiple layers overlayed, with adjustable transparency, currently only supports PNG format.
+
 ## How to build?
 
 Run command in the root dir:
