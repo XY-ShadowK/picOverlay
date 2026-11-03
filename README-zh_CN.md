@@ -16,38 +16,40 @@ cmake --build ./build
 
 对于MSVC编译器，将 `cmake --build ./build` 改为 `cmake --build ./build --config release`。
 
-如果你的系统没有安装libpng或zlib库，将 `cmake -B build` 改为如下
+如果你的系统没有安装windowsRub、cxxopts、libpng、zlib等库，将 `cmake -B build` 改为如下
 
 **POWERSHELL（Windows终端 非CMD）**
 
 ```PowerShell
 cmake -B build `
-    -DPNG_INCLUDE_DIR="{your libpng include dir}" `
-    -DPNG_LIBRARY="{your libpng lib dir}" `
-    -DZLIB_INCLUDE_DIR="{your zlib include dir}" `
-    -DZLIB_LIBRARY="{your zlib lib dir}"
+	-DWINDOWS_RUB_INCLUDE="{你的 windowsRub include 目录}" `
+	-DCXXOPTS_ROOT="{你的 cxxopts 根目录}" `
+    -DPNG_INCLUDE_DIR="{你的 libpng include 目录}" `
+    -DPNG_LIBRARY="{你的 libpng lib 文件}" `
+    -DZLIB_INCLUDE_DIR="{你的 zlib include 目录}" `
+    -DZLIB_LIBRARY="{你的 zlib lib 文件}"
 ```
 
 **SHELL（LINUX终端）**
 
 ```Shell
-cmake .. \
-    -DPNG_INCLUDE_DIR="{your libpng include dir}" \
-    -DPNG_LIBRARY="{your libpng lib dir}" \
-    -DZLIB_INCLUDE_DIR="{your zlib include dir}" \
-    -DZLIB_LIBRARY="{your zlib lib dir}"
+cmake -B build \
+	-DWINDOWS_RUB_INCLUDE="{你的 windowsRub include 目录}" \
+	-DCXXOPTS_ROOT="{你的 cxxopts 根目录}" \
+    -DPNG_INCLUDE_DIR="{你的 libpng include 目录}" \
+    -DPNG_LIBRARY="{你的 libpng lib 文件}" \
+    -DZLIB_INCLUDE_DIR="{你的 zlib include 目录}" \
+    -DZLIB_LIBRARY="{你的 zlib lib 文件}"
 ```
 
 ## 如何使用？
 
 1. 打开一个终端或者命令行
 2. cd到可执行文件（windows下为.exe linux下无后缀）所在的目录
-3. 运行 `picOverlay.exe -h(或 --help)` 来得到运行命令格式
-   简单运行举例： `picOverlay.exe -file=actions.txt`
+3. 运行 `picOverlay -h(或 --help)` 来得到帮助信息
+   简单运行示例： `picOverlay -file=actions.txt`
 
-### 额外选项：
-
-#### 速查列表：
+### 选项列表：
 
 * [`-i, --input`](OPTIONS-zh_CN.md##-i,---input) : 设置流程文件名
 * [`--source`](OPTIONS-zh_CN.md##--source) : 设置图片读取目录

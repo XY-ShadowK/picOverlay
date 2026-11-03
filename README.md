@@ -16,12 +16,14 @@ cmake --build ./build
 
 For MSVC, change `cmake --build ./build` to `cmake --build ./build --config release`.
 
-If your system does not have libpng or(and) zlib installed, change `cmake -B build` to below.
+If your system does not have windowsRub, cxxopts, libpng, zlib installed, change `cmake -B build` to below.
 
 **POWERSHELL**
 
 ```PowerShell
 cmake -B build `
+	-DWINDOWS_RUB_INCLUDE="{your windowsRub include dir}" `
+	-DCXXOPTS_ROOT="{your cxxopts root dir}" `
     -DPNG_INCLUDE_DIR="{your libpng include dir}" `
     -DPNG_LIBRARY="{your libpng lib dir}" `
     -DZLIB_INCLUDE_DIR="{your zlib include dir}" `
@@ -31,7 +33,9 @@ cmake -B build `
 **SHELL**
 
 ```Shell
-cmake .. \
+cmake -B build \
+	-DWINDOWS_RUB_INCLUDE="{your windowsRub include dir}" \
+	-DCXXOPTS_ROOT="{your cxxopts root dir}" \
     -DPNG_INCLUDE_DIR="{your libpng include dir}" \
     -DPNG_LIBRARY="{your libpng lib dir}" \
     -DZLIB_INCLUDE_DIR="{your zlib include dir}" \
@@ -42,12 +46,10 @@ cmake .. \
 
 1. Open shell/cmd/...
 2. change dir to executable file in
-3. run `picOverlay.exe -h(or --help)` to get run command format
-   simple running eg: `picOverlay.exe -file=actions.txt`
+3. run `picOverlay -h(or --help)` to get help information
+   simple running eg: `picOverlay -file=actions.txt`
 
-### Extra options:
-
-#### List:
+### Option List:
 
 * [`-i, --input`](OPTIONS-zh_CN.md##-i,---input) : Set action process filename
 * [`--source`](OPTIONS-zh_CN.md##--source) : Set read directory
