@@ -45,9 +45,9 @@ cmake -B build \
 ## How to use?
 
 1. Open shell/cmd/...
-2. change dir to executable file in
-3. run `picOverlay -h(or --help)` to get help information
-   simple running eg: `picOverlay -file=actions.txt`
+2. Change dir to executable file in
+3. Run `picOverlay -h(or --help)` to get help information
+   Simple Running e.g. : `picOverlay -file=actions.txt`
 
 ### Option List:
 

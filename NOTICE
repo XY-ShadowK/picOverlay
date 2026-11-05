@@ -13,8 +13,8 @@ Detailed license texts are located in the "licenses/" directory.
 
 2. cxxopts
    Version: none (commit ad6e41343d4ed239c6579a8e87c0a66b709d04be)
-   Source: https://git.savannah.gnu.org/git/libiconv.git
-   License: LGPL-2.1-or-later
+   Source: https://github.com/jarro2783/cxxopts
+   License: MIT License
    License file: licenses/cxxopts.txt
 
 3. zlib
