@@ -1,4 +1,11 @@
+#ifdef CMAKE_BUILD
+#include "version.h"
+#else
+#include "compiler/version.h.in"
+#endif
+
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <unordered_map>
 #include <map>
@@ -7,6 +14,7 @@
 #include <sstream>
 #include <iomanip>
 #include <type_traits>
+#include <cinttypes>
 
 #include "windowsRub.hpp"
 #include "cxxopts.hpp"
@@ -28,11 +36,6 @@ using std::quoted;
 
 const uint64_t MAX_PIXEL_DATA = 255;
 const uint64_t MAX_INPUT_PIXEL_DATA = 255;
-// const unordered_map<string, uint32_t> options{
-//     {"-custom_name", 0},
-//     {"-force_alpha", 1},
-//     {"-adam7", 2}
-// };
 const png_byte colorTypes[2][2] = {
     {PNG_COLOR_TYPE_RGB, PNG_COLOR_TYPE_RGB_ALPHA},
     {PNG_COLOR_TYPE_GRAY, PNG_COLOR_TYPE_GRAY_ALPHA}
@@ -64,7 +67,7 @@ string num2leading0str(T num) {
     return sStream.str();
 }
 
-void parseArgs(int argc, char* argv[]) {
+int parseArgs(int argc, char* const* const argv) {
     try {
         options
         .set_width(140)
@@ -75,6 +78,8 @@ void parseArgs(int argc, char* argv[]) {
             ("buffer-x", "缓冲区宽度", cxxopts::value<size_t>()->default_value("3840"), "BUFFER_WIDTH")
             ("buffer-y", "缓冲区高度", cxxopts::value<size_t>()->default_value("3840"), "BUFFER_HEIGHT")
             ("custom-name", "启用生成文件名自定义")
+            ("verbose", "显示详细信息")
+            ("v,version", "打印当前版本")
             ("h,help", "打印帮助信息")
             // ("force-alpha", "强制启用alpha通道")
             // ("adam7", "启用隔行扫描（只对写入生效）")
@@ -82,19 +87,22 @@ void parseArgs(int argc, char* argv[]) {
         settings = options.parse(argc, argv);
         if(settings.count("help")) {
             printf(options.help().c_str());
-            exit(0);
+            return 1;
         }
+        if(settings.count("version"))
+            printf("%s " APP_VERSION "\n", options.program().c_str());
         inPath = settings["source"].as<string>();
         outPath = settings["destination"].as<string>();
         if(settings.unmatched().size()) {
             cerr<<settings.unmatched()[0]<<" can not recognize."<<endl;
-            exit(-1);
+            return -1;
         }
     } catch (const cxxopts::exceptions::exception& e)
     {
         cerr<<"error parsing options: "<<e.what()<<endl;
-        exit(-1);
+        return -1;
     }
+    return 0;
 }
 
 void setLayer(const uint32_t& layer, const string& picName) {
@@ -110,7 +118,7 @@ bool setLayer(const string& filename, const uint32_t& layer) {
         if(pPicData)
             picDataStorage.emplace(filename, pPicData);
         else
-            exit(-1);
+            return false;
     }
     setLayer(layer, filename);
     // 已存在不透明度时，不改变原值
@@ -180,7 +188,13 @@ bool generatePicAndSave(const string& filename = num2leading0str(numGeneratePics
 }
 
 int resolve() {
-    if(!fin.is_open()) return -1;
+    if(!fin.is_open()) {
+        if(settings.count("version"))
+            return 0;
+        return -1;
+    }
+    printf("\n");
+
     string line, command, tempStr;
     stringstream ss;
     uint32_t t0, t1;
@@ -189,6 +203,8 @@ int resolve() {
     while(getline(fin, line)) {
         ss.str(line);
         ss.clear();
+        if(settings["verbose"].as<bool>())
+            printf("%s\n", line.c_str());
         ss >> command;
         if((it = cmdCode.find(command)) == cmdCode.end()) {
             cerr<<"参数错误！"<<endl;
@@ -212,7 +228,7 @@ int resolve() {
                 clearLayer(t0);
                 break;
             case 4 :
-                if(settings["custom_name"].as<bool>()) {
+                if(settings["custom-name"].as<bool>()) {
                     ss >> quoted(tempStr, '"', '\0');
                     generatePicAndSave(tempStr);
                 }
@@ -224,7 +240,13 @@ int resolve() {
 }
 
 UNIVERSE_MAIN
-    parseArgs(argc, argv);
-    fin.open(settings["input"].as<string>(), std::ios::in);
-    return resolve();
+    int ret = 0;
+    if((ret = parseArgs(argc, argv)) == 0) {
+        fin.open(settings["input"].as<string>(), std::ios::in);
+        UNIVERSE_MAIN_RETURN(resolve());
+    }
+    if(ret < 0) {
+        UNIVERSE_MAIN_RETURN(ret);
+    }
+    UNIVERSE_MAIN_RETURN(0);
 UNIVERSE_MAINEND

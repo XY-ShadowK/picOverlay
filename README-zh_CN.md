@@ -57,6 +57,8 @@ cmake -B build \
 * [`--buffer-x`](OPTIONS-zh_CN.md##--buffer-x) : 设置缓冲区宽度
 * [`--buffer-y`](OPTIONS-zh_CN.md##--buffer-y) : 设置缓冲区高度
 * [`--custom-name`](OPTIONS-zh_CN.md##--custom-name) : 开启生成文件名自定义模式
+* [`--verbose`](OPTIONS-zh_CN.md##--verbose) : 开启详细信息显示
+* [`-v, --version`](OPTIONS-zh_CN.md##-v,---version) : 打印版本信息
 * [`-h, --help`](OPTIONS-zh_CN.md##-h,---help) : 打印帮助信息
 
 ### 如何编写执行脚本

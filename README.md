@@ -51,13 +51,15 @@ cmake -B build \
 
 ### Option List:
 
-* [`-i, --input`](OPTIONS-zh_CN.md##-i,---input) : Set action process filename
-* [`--source`](OPTIONS-zh_CN.md##--source) : Set read directory
-* [`--destination`](OPTIONS-zh_CN.md##--destination) : Set output directory
-* [`--buffer-x`](OPTIONS-zh_CN.md##--buffer-x) : Set buffer width
-* [`--buffer-y`](OPTIONS-zh_CN.md##--buffer-y) : Set buffer height
+* [`-i, --input`](OPTIONS.md##-i,---input) : Set action process filename
+* [`--source`](OPTIONS.md##--source) : Set read directory
+* [`--destination`](OPTIONS.md##--destination) : Set output directory
+* [`--buffer-x`](OPTIONS.md##--buffer-x) : Set buffer width
+* [`--buffer-y`](OPTIONS.md##--buffer-y) : Set buffer height
 * [`--custom-name`](OPTIONS.md##--custom-name) : Turn on filename custom mode
-* [`-h, --help`](OPTIONS-zh_CN.md##-h,---help) : Print help information
+* [`--verbose`](OPTIONS.md##--verbose) : Enable print details
+* [`-v, -version`](OPTIONS.md##-v,---version) : Print version information
+* [`-h, --help`](OPTIONS.md##-h,---help) : Print help information
 
 ### How to write action script?
 

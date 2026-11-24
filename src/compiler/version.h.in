@@ -1,0 +1,7 @@
+#pragma once
+#ifndef _VERSION_HPP_
+#define _VERSION_HPP_
+
+#define APP_VERSION "@APP_VERSION@"
+
+#endif

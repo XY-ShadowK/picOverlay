@@ -29,6 +29,14 @@
 
 When this option is enabled, you must use `generate filename` to explictly specify generated filename.
 
+## `--verbose`
+
+Enable print details.
+
+## `-v, --version`
+
+Print Version information.
+
 ## `-h, --help`
 
-Printf help information.
+Print help information.

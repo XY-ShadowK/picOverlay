@@ -7,6 +7,7 @@ time: 2026/10/14 22:26:51
 
 #include <type_traits>
 #include <string.h>
+#include <cinttypes>
 
 #include "png.h"
 #include "zlib.h"

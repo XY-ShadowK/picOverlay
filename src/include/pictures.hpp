@@ -7,6 +7,8 @@ time: 2026/10/14 22:27:11
 
 #include <memory>
 #include <type_traits>
+#include <cinttypes>
+
 #include "png.h"
 #include "zlib.h"
 
