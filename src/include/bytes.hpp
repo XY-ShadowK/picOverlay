@@ -98,7 +98,7 @@ public:
         copyBytes(otherList.bytes, sizeChunk * length);
         remap();
     }
-    ~self_pod_list() {
+    ~self_pod_list() override {
         delete[] chunks;
         chunks = nullptr;
         selfResetBytes();
@@ -130,7 +130,7 @@ public:
         }
         return *this;
     }
-    void setBytes(Byte* const& bytesTarget) noexcept {
+    void setBytes(Byte* const& bytesTarget) noexcept override {
         Bytes::setBytes(bytesTarget);
         remap();
     }

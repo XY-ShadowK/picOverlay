@@ -22,9 +22,6 @@
 #include "include/pictures.hpp"
 #include "include/pngs.hpp"
 
-using std::cin;
-using std::cerr;
-using std::endl;
 using std::string;
 using std::to_string;
 using std::stringstream;
@@ -94,38 +91,49 @@ int parseArgs(int argc, char* const* const argv) {
         inPath = settings["source"].as<string>();
         outPath = settings["destination"].as<string>();
         if(settings.unmatched().size()) {
-            cerr<<settings.unmatched()[0]<<" can not recognize."<<endl;
+            fprintf(stderr, "%s can not recognize.\n", settings.unmatched()[0].c_str());
             return -1;
         }
     } catch (const cxxopts::exceptions::exception& e)
     {
-        cerr<<"error parsing options: "<<e.what()<<endl;
+        fprintf(stderr, "error parsing options: %s\n", e.what());
         return -1;
     }
     return 0;
 }
 
-void setLayer(const uint32_t& layer, const string& picName) {
-    if(picLayers.find(layer) == picLayers.end())
-        picLayers.emplace(layer, picName);
+void setLayerPicName(const uint32_t& layer, const string& picName) {
+    // if(picLayers.find(layer) == picLayers.end())
+    //     picLayers.emplace(layer, picName);
+    // else
+    //     picLayers[layer] = picName;
+    map<uint32_t, string>::iterator hint = picLayers.lower_bound(layer);
+    if(hint == picLayers.end() || picLayers.key_comp()(layer, hint->first))
+        picLayers.emplace_hint(hint, layer, picName);
     else
-        picLayers[layer] = picName;
+        hint->second = picName;
 }
-bool setLayer(const string& filename, const uint32_t& layer) {
-    unordered_map<string, PicData*>::const_iterator it;
-    if((it = picDataStorage.find(filename)) == picDataStorage.end()) {
+bool setLayerPicData(const uint32_t& layer, const string& filename) {
+    auto [it, inserted] = picDataStorage.try_emplace(filename, nullptr);
+    if(inserted) {
         PicData* pPicData = readPng(inPath + '/' + filename);
         if(pPicData)
-            picDataStorage.emplace(filename, pPicData);
+            it->second = pPicData;
         else
             return false;
     }
-    setLayer(layer, filename);
+    return true;
+}
+bool setLayer(const uint32_t& layer, const string& filename) {
+    if(!setLayerPicData(layer, filename))
+        return false;
+    setLayerPicName(layer, filename);
     // 已存在不透明度时，不改变原值
-    layerShow.emplace(layer, 0);
+    layerShow.try_emplace(layer, 0);
     return true;
 }
 bool showLayer(const uint32_t& layer, const uint8_t& alpha) {
+    // 检查是正确的，但为了速度，假设不会传入不存在的layer
     // if(layerShow.find(layer) == layerShow.end())
     //     return false;
     if constexpr (MAX_PIXEL_DATA == MAX_INPUT_PIXEL_DATA)
@@ -135,9 +143,11 @@ bool showLayer(const uint32_t& layer, const uint8_t& alpha) {
     return true;
 }
 bool hideLayer(const uint32_t& layer) {
-    if(layerShow.find(layer) == layerShow.end())
+    const unordered_map<uint32_t, uint64_t>::iterator& it = layerShow.find(layer);
+    if(it == layerShow.end())
         return false;
-    layerShow[layer] = 0;
+    // layerShow[layer] = 0;
+    it->second = 0;
     return true;
 }
 void clearLayer(const uint32_t& layer) {
@@ -147,11 +157,10 @@ void clearLayer(const uint32_t& layer) {
 bool generatePicAndSave(const string& filename = num2leading0str(numGeneratePics) + ".png") {
     if(picLayers.empty()) return false;
     map<uint32_t, string>::iterator itLayer = picLayers.begin();
-    unordered_map<uint32_t, uint64_t>::iterator itShow;
     printf("\ngenerate %u:\n", ++ numGeneratePics);
     string nowPicArgs = "";
     for(;itLayer != picLayers.end();itLayer ++) {
-        itShow = layerShow.find(itLayer->first);
+        const unordered_map<uint32_t, uint64_t>::const_iterator& itShow = layerShow.find(itLayer->first);
         if(itShow->second)
             nowPicArgs += to_string(itLayer->first) + '*' + itLayer->second + '*' + to_string(itShow->second) + " ? ";
     }
@@ -160,12 +169,11 @@ bool generatePicAndSave(const string& filename = num2leading0str(numGeneratePics
         numGeneratePics --;
         return false;
     }
-    unordered_map<string, PicData*>::iterator itPic;
     PicData picData;
     for(itLayer = picLayers.begin();itLayer != picLayers.end();itLayer ++) {
-        itShow = layerShow.find(itLayer->first);
+        const unordered_map<uint32_t, uint64_t>::const_iterator& itShow = layerShow.find(itLayer->first);
         if(itShow->second) {
-            itPic = picDataStorage.find(itLayer->second);
+            const unordered_map<string, PicData*>::const_iterator& itPic = picDataStorage.find(itLayer->second);
             if(itPic == picDataStorage.end()) return false;
             printf("Layer %u : %s Opacity : %llu\n", itLayer->first, itLayer->second.c_str(), itShow->second);
             if(picData.getStorageInit())
@@ -206,14 +214,15 @@ int resolve() {
         if(settings["verbose"].as<bool>())
             printf("%s\n", line.c_str());
         ss >> command;
-        if((it = cmdCode.find(command)) == cmdCode.end()) {
-            cerr<<"参数错误！"<<endl;
+        const unordered_map<string, uint32_t>::const_iterator& it = cmdCode.find(command);
+        if(it == cmdCode.end()) {
+            fprintf(stderr, "参数错误！\n");
             return -1;
         }
         switch(it->second) {
             case 0 :
                 ss >> t0 >> quoted(tempStr, '"', '\0');
-                if(!setLayer(tempStr, t0)) return -1;
+                if(!setLayer(t0, tempStr)) return -1;
                 break;
             case 1 :
                 ss >> t0 >> t1;

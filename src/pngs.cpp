@@ -1,46 +1,44 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "errorUtils.hpp"
+
 #include "include/pngs.hpp"
 
-using std::cin;
-using std::cerr;
-using std::endl;
 using std::string;
+using errorUtils::errorCode2String;
+using errorUtils::SysGetLastError;
 
-FILE* fpRead = nullptr;
-FILE* fpWrite = nullptr;
-char buf[9] = {0};
+static FILE* fpRead = nullptr;
+static FILE* fpWrite = nullptr;
+static char buf[9] = {0};
 
 bool getPng(const string& filename, PngInfo*& pPngInfo)
 {
     if(!(fpRead = cFileOpen(filename.c_str(), "rb"))) {
-        cerr << filename << " 无法打开！错误：" << strerror(errno) << endl;
+        fprintf(stderr, "%s 无法打开！ %s\n", filename.c_str(), errorCode2String(SysGetLastError()).c_str());
         return false;
     }
-    if(fread(buf, 1, PNG_BYTES_TO_CHECK, fpRead) != PNG_BYTES_TO_CHECK) {
-        cerr<<filename<<" 不是png图片！"<<endl;
-        return false;
-    }
-    if(png_sig_cmp((png_const_bytep)buf, 0, PNG_BYTES_TO_CHECK)) {
-        cerr<<filename<<" 不是png图片！"<<endl;
+    if(fread(buf, 1, PNG_BYTES_TO_CHECK, fpRead) != PNG_BYTES_TO_CHECK ||
+    png_sig_cmp((png_const_bytep)buf, 0, PNG_BYTES_TO_CHECK)) {
+        fprintf(stderr, "%s 不是png图片！\n", filename.c_str());
         return false;
     }
     pPngInfo = new PngInfo(png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
     if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
-        cerr<<"png结构体初始化错误！"<<endl;
+        fprintf(stderr, "png结构体初始化错误！\n");
         return false;
     }
     return true;
 }
 bool setPng(const string& filename, PngInfo*& pPngInfo) {
     if(!(fpWrite = cFileOpen(filename.c_str(), "wb"))) {
-        cerr << filename << " 无法打开！错误：" << strerror(errno) << endl;
+        fprintf(stderr, "%s 无法打开！ %s\n", filename.c_str(), errorCode2String(SysGetLastError()).c_str());
         return false;
     }
     pPngInfo = new PngInfo(png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
     if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
-        cerr<<"png结构体初始化错误！"<<endl;
+        fprintf(stderr, "png结构体初始化错误！\n");
         return false;
     }
     return true;
