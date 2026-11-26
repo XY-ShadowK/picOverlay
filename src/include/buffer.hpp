@@ -18,9 +18,10 @@ public:
         reassign();
     }
     void reassignOnlyWidth() {
-        // 防止内存泄漏
         if(!(width && height))
             return;
+        if(rows[0])
+            delete[] rows[0];
         Byte* raw = new Byte[height * width];
         for(int i = 0;i < height;i ++) {
             rows[i] = raw;
@@ -38,8 +39,12 @@ public:
     //     temp = nullptr;
     // }
     void reassign() {
+        if(!height)
+            return;
+        Byte* pRaw = rows ? rows[0] : nullptr;
         delete[] rows;
         rows = new Byte*[height];
+        rows[0] = pRaw;
         reassignOnlyWidth();
     }
     void resize(size_t w, size_t h) {

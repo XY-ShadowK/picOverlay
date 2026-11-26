@@ -1,13 +1,16 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "errorUtils.hpp"
+#include "Error_Utils.hpp"
+#include "File_Utils.hpp"
 
 #include "include/pngs.hpp"
 
 using std::string;
-using errorUtils::errorCode2String;
-using errorUtils::SysGetLastError;
+using WindowsRub::ErrorUtils::errorCode2String;
+using WindowsRub::ErrorUtils::SysGetLastError;
+using WindowsRub::File::getFilePathU8;
+using WindowsRub::File::cFileOpen;
 
 static FILE* fpRead = nullptr;
 static FILE* fpWrite = nullptr;
@@ -15,7 +18,7 @@ static char buf[9] = {0};
 
 bool getPng(const string& filename, PngInfo*& pPngInfo)
 {
-    if(!(fpRead = cFileOpen(filename.c_str(), "rb"))) {
+    if(!(fpRead = cFileOpen(getFilePathU8(filename), "rb"))) {
         fprintf(stderr, "%s 无法打开！ %s\n", filename.c_str(), errorCode2String(SysGetLastError()).c_str());
         return false;
     }
@@ -27,18 +30,22 @@ bool getPng(const string& filename, PngInfo*& pPngInfo)
     pPngInfo = new PngInfo(png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
     if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
         fprintf(stderr, "png结构体初始化错误！\n");
+        delete pPngInfo;
+        pPngInfo = nullptr;
         return false;
     }
     return true;
 }
 bool setPng(const string& filename, PngInfo*& pPngInfo) {
-    if(!(fpWrite = cFileOpen(filename.c_str(), "wb"))) {
+    if(!(fpWrite = cFileOpen(getFilePathU8(filename), "wb"))) {
         fprintf(stderr, "%s 无法打开！ %s\n", filename.c_str(), errorCode2String(SysGetLastError()).c_str());
         return false;
     }
     pPngInfo = new PngInfo(png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr));
     if(!pPngInfo->getPStruct() || !pPngInfo->getPInfo()) {
         fprintf(stderr, "png结构体初始化错误！\n");
+        delete pPngInfo;
+        pPngInfo = nullptr;
         return false;
     }
     return true;
@@ -62,6 +69,7 @@ PicData* readPng(const string& filename) {
         fclose(fpRead);
         fpRead = nullptr;
     }
+    delete pPngInfo;
     return pPicData;
 }
 bool writePng(const string& filename, PicData* pPicData, png_byte colorType) {
@@ -82,5 +90,6 @@ bool writePng(const string& filename, PicData* pPicData, png_byte colorType) {
         fclose(fpWrite);
         fpWrite = nullptr;
     }
+    delete pPngInfo;
     return true;
 }

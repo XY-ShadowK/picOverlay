@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <cinttypes>
 
-#include "windowsRub.hpp"
+#include "Universe_Entry.hpp"
 #include "cxxopts.hpp"
 
 #include "include/pictures.hpp"
@@ -62,6 +62,15 @@ string num2leading0str(T num) {
     sStream.clear();
     sStream << std::setw(2) << std::setfill('0') << num;
     return sStream.str();
+}
+
+void clearPicDataStorage() {
+    unordered_map<string, PicData*>::iterator it = picDataStorage.begin();
+    for(;it != picDataStorage.end();it ++) {
+        delete it->second;
+        it->second = nullptr;
+    }
+    picDataStorage.clear();
 }
 
 int parseArgs(int argc, char* const* const argv) {
@@ -248,11 +257,19 @@ int resolve() {
     return 0;
 }
 
+int resolveClear() {
+    int ret = 0;
+    ret = resolve();
+    clearPicDataStorage();
+    fin.close();
+    return ret;
+}
+
 UNIVERSE_MAIN
     int ret = 0;
     if((ret = parseArgs(argc, argv)) == 0) {
         fin.open(settings["input"].as<string>(), std::ios::in);
-        UNIVERSE_MAIN_RETURN(resolve());
+        UNIVERSE_MAIN_RETURN(resolveClear());
     }
     if(ret < 0) {
         UNIVERSE_MAIN_RETURN(ret);

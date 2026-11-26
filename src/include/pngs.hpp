@@ -7,7 +7,6 @@ time: 2026/10/14 22:27:22
 
 #include <string>
 
-#include "include/file.h"
 #include "include/pictures.hpp"
 
 bool getPng(const std::string& filename, PngInfo*& pPngInfo);

@@ -166,10 +166,10 @@ public:
             hasAlpha = otherPicData.hasAlpha;
             sizeByte = otherPicData.sizeByte;
             clearStorage();
-            initStorage(tempLength);
+            delete[] initStorage(tempLength);
         }
         else if(!isStorageInit)
-            initStorage(tempLength);
+            delete[] initStorage(tempLength);
         if(isGray)
             *degreeGray = *otherPicData.degreeGray;
         else {
@@ -264,18 +264,22 @@ public:
                 copyData(otherPicData);
                 return true;
             }
+            PODList<Bytes>** colorBackList = getStorage();
+            PODList<Bytes>** colorFrontList = otherPicData.getStorage();
             if(hasAlpha) {
                 if(coefficientAlpha)
-                    overlayColor<uint64_t, true>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel - 1, getStorage(), otherPicData.getStorage(), degreeAlpha, otherPicData.degreeAlpha, coefficientAlpha);
+                    overlayColor<uint64_t, true>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel - 1, colorBackList, colorFrontList, degreeAlpha, otherPicData.degreeAlpha, coefficientAlpha);
                 else
-                    overlayColor<uint64_t, false>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel - 1, getStorage(), otherPicData.getStorage(), degreeAlpha, otherPicData.degreeAlpha, 0ULL);
+                    overlayColor<uint64_t, false>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel - 1, colorBackList, colorFrontList, degreeAlpha, otherPicData.degreeAlpha, 0ULL);
             }
             else {
                 if(coefficientAlpha)
-                    overlayColor<uint64_t, true>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel, getStorage(), otherPicData.getStorage(), otherPicData.degreeAlpha, coefficientAlpha);
+                    overlayColor<uint64_t, true>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel, colorBackList, colorFrontList, otherPicData.degreeAlpha, coefficientAlpha);
                 else
-                    overlayColor<uint64_t, false>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel, getStorage(), otherPicData.getStorage(), otherPicData.degreeAlpha, 0ULL);
+                    overlayColor<uint64_t, false>(picInfoPtr->bitDepth, sizeByte, picInfoPtr->numChannel, colorBackList, colorFrontList, otherPicData.degreeAlpha, 0ULL);
             }
+            delete[] colorBackList;
+            delete[] colorFrontList;
         }
         return true;
     }
